@@ -14,6 +14,15 @@ import java.security.NoSuchAlgorithmException;
 public class TestOne {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException {
         JSONObject object = new JSONObject();
+        /**
+         * ApiUtils.onePost 发起一次API请求
+         *
+         * @param appKey    购买商品后，云市场控制台显示appkey
+         * @param appSecret 购买商品后，云市场控制台显示appsecret
+         * @param url       商品页显示url
+         * @param object    http body
+         * @param stage     预发："PRE"；线上："RELEASE"
+         */
         ApiUtils.onePost("#appkey",
                 "#appsecret",
                 "#url",
