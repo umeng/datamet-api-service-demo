@@ -1,6 +1,6 @@
 # 数擎API服务demo
 
-第一步，到云市场购买商品，[点击链接](https://shop3l92l973.market.aliyun.com/page/productlist.htm)进入友盟商品列表
+第一步，到云市场购买商品，点击进入[友盟商品列表](https://shop3l92l973.market.aliyun.com/page/productlist.htm)
 
 第二步，在云市场控制台获取appkey、appsecret，如203722811、xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
