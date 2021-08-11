@@ -45,7 +45,7 @@ public class ApiUtils {
     }
 
     /**
-     * 发起一次API请求
+     * 发起一次API请求，安全认证方式：签名
      *
      * @param appKey    购买商品后，云市场控制台显示appkey
      * @param appSecret 购买商品后，云市场控制台显示appsecret
@@ -53,7 +53,7 @@ public class ApiUtils {
      * @param object    http body
      * @param stage     预发："PRE"；线上："RELEASE"
      */
-    public static void onePost(String appKey, String appSecret, String url, Object object, String stage) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+    public static void onePostWithSign(String appKey, String appSecret, String url, Object object, String stage) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
         HttpPost httpPost = new HttpPost(url);
         /**
          * body
@@ -74,10 +74,10 @@ public class ApiUtils {
         httpPost.setHeader("X-Ca-Nonce", UUID.randomUUID().toString());
         httpPost.setHeader("Content-MD5", Base64.encodeBase64String(DigestUtils.md5(JSON.toJSONString(object))));
         /**
-         * sign
+         * sign 如果报错签名错误，把此处的stringToSign打印出来，换行用#代替，与网关返回的内容对比修正
          */
         String stringToSign = getSignString(httpPost);
-//        System.out.println(stringToSign);
+        // System.out.println(stringToSign);
         Mac hmacSha256 = Mac.getInstance("HmacSHA256");
         byte[] keyBytes = appSecret.getBytes(StandardCharsets.UTF_8);
         hmacSha256.init(new SecretKeySpec(keyBytes, 0, keyBytes.length, "HmacSHA256"));
@@ -91,7 +91,45 @@ public class ApiUtils {
         CloseableHttpResponse response = httpclient.execute(httpPost);
         long b = System.currentTimeMillis();
         System.out.println("返回状态：" + response.getStatusLine());
-        System.out.println("请求耗时：" + (b - a) + "ms");
+        System.out.println("请求耗时：" + (b - a) + "ms （提示：此时间包含DNS查询、TCP握手、SSL握手、服务端处理、网络延迟、Response下载等）");
+        System.out.println("返回Headers：" + Arrays.toString(response.getAllHeaders()));
+        System.out.println("返回Body：" + EntityUtils.toString(response.getEntity()));
+    }
+
+    /**
+     * 发起一次API请求，安全认证方式：APPCODE
+     *
+     * @param appcode 购买商品后，云市场控制台显示appcode
+     * @param url     商品页显示url
+     * @param object  http body
+     * @param stage   预发："PRE"；线上："RELEASE"
+     * @return
+     * @throws IOException
+     */
+    public static void onePostWithAppcode(String appcode, String url, Object object, String stage) throws IOException {
+        HttpPost httpPost = new HttpPost(url);
+        /**
+         * body
+         */
+        StringEntity stringEntity = new StringEntity(JSON.toJSONString(object), StandardCharsets.UTF_8);
+        httpPost.setEntity(stringEntity);
+        /**
+         * header
+         */
+        httpPost.setHeader("Content-Type", "application/json; charset=UTF-8");
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("X-Ca-Stage", stage);
+        httpPost.setHeader("X-Ca-Nonce", UUID.randomUUID().toString());
+        httpPost.setHeader("Authorization", String.format("APPCODE %s", appcode));
+        /**
+         * execute
+         */
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        long a = System.currentTimeMillis();
+        CloseableHttpResponse response = httpclient.execute(httpPost);
+        long b = System.currentTimeMillis();
+        System.out.println("返回状态：" + response.getStatusLine());
+        System.out.println("请求耗时：" + (b - a) + "ms （提示：此时间包含DNS查询、TCP握手、SSL握手、服务端处理、网络延迟、Response下载等）");
         System.out.println("返回Headers：" + Arrays.toString(response.getAllHeaders()));
         System.out.println("返回Body：" + EntityUtils.toString(response.getEntity()));
     }
